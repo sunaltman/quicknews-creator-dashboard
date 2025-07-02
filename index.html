@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick News – Creator Dashboard</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js CDN - Load before app.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header glass">
+    <div class="container">
+      <div class="header__content">
+        <div class="header__brand">
+          <div class="logo-container">
+            <div class="logo-wrapper" id="logoWrapper">
+              <!-- Fallback circle logo -->
+              <div id="logoFallback" class="logo-fallback">QN</div>
+              <!-- Uploaded logo image -->
+              <img id="logoImg" class="logo-img" alt="Logo" style="display:none;" />
+              <!-- Upload trigger -->
+              <button class="logo-upload-btn" id="logoUploadBtn" title="Upload logo" aria-label="Upload logo">
+                <i class="fa-solid fa-camera"></i>
+              </button>
+              <input type="file" id="logoFileInput" accept="image/png, image/jpeg" hidden />
+            </div>
+            <div class="brand-text">
+              <h1 class="header__title">Quick News Dashboard</h1>
+              <p class="header__subtitle">Creator Management System</p>
+            </div>
+          </div>
+        </div>
+        <div class="header__stats">
+          <div class="stat-card glass-card">
+            <div class="stat-card__value" id="totalCreators">8</div>
+            <div class="stat-card__label">Total Creators</div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-card__value" id="activeCreators">8</div>
+            <div class="stat-card__label">Active Creators</div>
+          </div>
+          <div class="stat-card glass-card">
+            <div class="stat-card__value" id="totalIncentivesPaid">$530</div>
+            <div class="stat-card__label">Incentives Paid</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="nav glass">
+    <div class="container">
+      <div class="nav__tabs">
+        <button class="nav__tab nav__tab--active" data-tab="dashboard">
+          <i class="fa-solid fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav__tab" data-tab="creators">
+          <i class="fa-solid fa-users"></i>
+          <span>Creators</span>
+        </button>
+        <button class="nav__tab" data-tab="categories">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Categories</span>
+        </button>
+        <button class="nav__tab" data-tab="leaderboard">
+          <i class="fa-solid fa-trophy"></i>
+          <span>Leaderboard</span>
+        </button>
+        <button class="nav__tab" data-tab="missions">
+          <i class="fa-solid fa-bullseye"></i>
+          <span>Missions</span>
+        </button>
+        <button class="nav__tab" data-tab="incentives">
+          <i class="fa-solid fa-gift"></i>
+          <span>Incentives</span>
+        </button>
+        <button class="nav__tab" data-tab="analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analytics</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="container">
+      <!-- Dashboard Tab -->
+      <div class="tab-content tab-content--active" id="dashboard">
+        <div class="dashboard-grid">
+          <div class="dashboard-section">
+            <h2>Platform Overview</h2>
+            <div class="stats-grid">
+              <div class="card glass-card">
+                <div class="card__body">
+                  <div class="metric">
+                    <div class="metric__value" id="totalFollowers">354K</div>
+                    <div class="metric__label">Total Followers</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card glass-card">
+                <div class="card__body">
+                  <div class="metric">
+                    <div class="metric__value" id="avgEngagement">10.5%</div>
+                    <div class="metric__label">Avg Engagement</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card glass-card">
+                <div class="card__body">
+                  <div class="metric">
+                    <div class="metric__value" id="totalPosts">265</div>
+                    <div class="metric__label">Total Posts</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Mission progress chart -->
+            <div class="card glass-card" style="margin-top:24px;">
+              <div class="card__body">
+                <h3>Mission Progress</h3>
+                <div style="height: 300px;">
+                  <canvas id="progressChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-section">
+            <h2>Platform Overview</h2>
+            <div class="card glass-card">
+              <div class="card__body">
+                <h3>Platform Metrics</h3>
+                <div style="height: 300px;">
+                  <canvas id="platformOverviewChart"></canvas>
+                </div>
+              </div>
+            </div>
+            
+            <h2 style="margin-top: 24px;">Recent Activity</h2>
+            <div class="card glass-card">
+              <div class="card__body">
+                <div class="activity-feed" id="activityFeed"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Creators Tab -->
+      <div class="tab-content" id="creators">
+        <div class="creators-header">
+          <h2>
+            <i class="fa-solid fa-users"></i>
+            <span style="margin-left: 8px;">Creators Management</span>
+          </h2>
+          <div class="creators-actions">
+            <div class="search-box">
+              <input type="text" class="form-control" placeholder="Search creators..." id="creatorSearch" />
+            </div>
+            <button class="btn btn--primary" id="addCreatorBtn">
+              <i class="fa-solid fa-user-plus"></i>
+              <span style="margin-left:6px;">Add Creator</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="creators-table-wrapper">
+          <div class="creators-table-container glass-card">
+            <table class="creators-table" id="creatorsTable">
+              <thead>
+                <tr>
+                  <th>Creator</th>
+                  <th>Followers</th>
+                  <th>Early Launch</th>
+                  <th>Referrals</th>
+                  <th>Monthly Revenue</th>
+                  <th>Categories</th>
+                  <th>Level</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="creatorsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Tab -->
+      <div class="tab-content" id="categories">
+        <h2>
+          <i class="fa-solid fa-layer-group"></i>
+          <span style="margin-left: 8px;">Category Coverage Matrix</span>
+        </h2>
+        <div class="category-matrix glass-card" id="categoryMatrix"></div>
+        <div class="category-stats">
+          <h3 class="gradient-text">Category Performance</h3>
+          <div class="category-stats-grid" id="categoryStats"></div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Tab -->
+      <div class="tab-content" id="leaderboard">
+        <div class="leaderboard-header">
+          <h2>
+            <i class="fa-solid fa-trophy"></i>
+            <span style="margin-left: 8px;">Creator Leaderboards</span>
+          </h2>
+          <div class="leaderboard-filters">
+            <select class="form-control" id="leaderboardType">
+              <option value="followers">Top by Followers</option>
+              <option value="earnings">Highest Earnings</option>
+              <option value="engagement">Highest Engagement</option>
+              <option value="referrals">Most Referrals</option>
+            </select>
+          </div>
+        </div>
+        <div class="podium" id="podium"></div>
+        <div class="leaderboard-list" id="leaderboardList"></div>
+      </div>
+
+      <!-- Missions Tab -->
+      <div class="tab-content" id="missions">
+        <h2>
+          <i class="fa-solid fa-bullseye"></i>
+          <span style="margin-left: 8px;">Creator Missions</span>
+        </h2>
+        <div class="missions-grid" id="missionsGrid"></div>
+      </div>
+
+      <!-- Incentives Tab -->
+      <div class="tab-content" id="incentives">
+        <h2>
+          <i class="fa-solid fa-gift"></i>
+          <span style="margin-left: 8px;">Incentive Tracking Dashboard</span>
+        </h2>
+        <div class="incentives-grid">
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-bullseye"></i>
+                <span style="margin-left: 8px;">Early Launch Incentive Progress</span>
+              </h3>
+              <div style="height: 300px;">
+                <canvas id="earlyLaunchChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-users"></i>
+                <span style="margin-left: 8px;">Referral Performance</span>
+              </h3>
+              <div style="height: 300px;">
+                <canvas id="referralChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-calculator"></i>
+                <span style="margin-left: 8px;">Earnings Calculator</span>
+              </h3>
+              <div class="earnings-calculator">
+                <div class="form-group">
+                  <label class="form-label">Monthly Views</label>
+                  <input type="number" class="form-control" id="viewsInput" placeholder="200000" value="200000" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Subscribers</label>
+                  <input type="number" class="form-control" id="subscribersInput" placeholder="500" value="500" />
+                </div>
+                <button class="btn btn--primary" id="calculateEarnings">
+                  <i class="fa-solid fa-dollar-sign"></i>
+                  <span style="margin-left:6px;">Calculate</span>
+                </button>
+                <div class="calculation-result" id="calculationResult">
+                  <h4>Projected Monthly Earnings</h4>
+                  <div class="earnings-breakdown">
+                    <div class="earnings-item">
+                      <span>Ad Revenue:</span>
+                      <span id="adRevenue">$240</span>
+                    </div>
+                    <div class="earnings-item">
+                      <span>Subscription Revenue:</span>
+                      <span id="subRevenue">$249.50</span>
+                    </div>
+                    <div class="earnings-total">
+                      <span>Total Monthly:</span>
+                      <span id="totalRevenue">~$490</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-chart-pie"></i>
+                <span style="margin-left: 8px;">Incentive Summary</span>
+              </h3>
+              <div class="incentive-summary" id="incentiveSummary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div class="tab-content" id="analytics">
+        <h2>
+          <i class="fa-solid fa-chart-line"></i>
+          <span style="margin-left: 8px;">Analytics & Detailed Insights</span>
+        </h2>
+        <div class="analytics-grid">
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-chart-pie"></i>
+                <span style="margin-left: 8px;">Revenue Distribution</span>
+              </h3>
+              <div style="height: 300px;">
+                <canvas id="revenueDistributionChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-chart-line"></i>
+                <span style="margin-left: 8px;">Monthly Growth Projection</span>
+              </h3>
+              <div style="height: 300px;">
+                <canvas id="revenueGrowthChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-chart-bar"></i>
+                <span style="margin-left: 8px;">Category Performance</span>
+              </h3>
+              <div style="height: 300px;">
+                <canvas id="categoryPerformanceChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card glass-card">
+            <div class="card__body">
+              <h3>
+                <i class="fa-solid fa-chart-area"></i>
+                <span style="margin-left: 8px;">Engagement Metrics</span>
+              </h3>
+              <div style="height: 300px;">
+                <canvas id="engagementMetricsChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <!-- Creator Detail Modal -->
+  <div class="modal" id="creatorModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content glass-modal">
+      <div class="modal__header">
+        <h3 id="creatorModalTitle">Creator Details</h3>
+        <button class="modal__close" id="closeCreatorModal">×</button>
+      </div>
+      <div class="modal__body" id="creatorModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Add Creator Modal -->
+  <div class="modal" id="addCreatorModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content glass-modal">
+      <div class="modal__header">
+        <h3>
+          <i class="fa-solid fa-user-plus"></i>
+          <span style="margin-left: 8px;">Add New Creator</span>
+        </h3>
+        <button class="modal__close" id="closeAddCreatorModal">×</button>
+      </div>
+      <div class="modal__body">
+        <form id="addCreatorForm">
+          <div class="form-group">
+            <label class="form-label">Profile Picture</label>
+            <div class="profile-upload-container">
+              <div class="profile-preview" id="addProfilePreview">
+                <div class="profile-placeholder">
+                  <i class="fa-solid fa-camera"></i>
+                  <p>Upload Photo</p>
+                </div>
+              </div>
+              <div class="upload-controls">
+                <input type="file" class="file-input" id="addProfilePicture" accept="image/*" />
+                <label for="addProfilePicture" class="btn btn--secondary btn--sm">Choose Photo</label>
+                <button type="button" class="btn btn--outline btn--sm" id="removeAddPhoto" style="display: none;">Remove</button>
+              </div>
+              <div class="upload-dropzone" id="addDropzone">
+                <div class="dropzone-content">
+                  <i class="fa-solid fa-folder-open dropzone-icon"></i>
+                  <p>Drag & drop image here</p>
+                  <small>Or click to browse</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Name *</label>
+            <input type="text" class="form-control" name="name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Handle *</label>
+            <input type="text" class="form-control" name="handle" placeholder="@username" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" name="email" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Followers *</label>
+            <input type="number" class="form-control" name="followers" min="0" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categories</label>
+            <div class="category-checkboxes" id="categoryCheckboxes"></div>
+          </div>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" id="cancelAddCreator">Cancel</button>
+            <button type="submit" class="btn btn--primary">Add Creator</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Creator Modal -->
+  <div class="modal" id="editCreatorModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content glass-modal">
+      <div class="modal__header">
+        <h3>
+          <i class="fa-solid fa-user-edit"></i>
+          <span style="margin-left: 8px;">Edit Creator</span>
+        </h3>
+        <button class="modal__close" id="closeEditCreatorModal">×</button>
+      </div>
+      <div class="modal__body">
+        <form id="editCreatorForm">
+          <input type="hidden" name="id" id="editCreatorId" />
+          <div class="form-group">
+            <label class="form-label">Profile Picture</label>
+            <div class="profile-upload-container">
+              <div class="profile-preview" id="editProfilePreview">
+                <div class="profile-placeholder">
+                  <i class="fa-solid fa-camera"></i>
+                  <p>Upload Photo</p>
+                </div>
+              </div>
+              <div class="upload-controls">
+                <input type="file" class="file-input" id="editProfilePicture" accept="image/*" />
+                <label for="editProfilePicture" class="btn btn--secondary btn--sm">Change Photo</label>
+                <button type="button" class="btn btn--outline btn--sm" id="removeEditPhoto" style="display: none;">Remove</button>
+              </div>
+              <div class="upload-dropzone" id="editDropzone">
+                <div class="dropzone-content">
+                  <i class="fa-solid fa-folder-open dropzone-icon"></i>
+                  <p>Drag & drop image here</p>
+                  <small>Or click to browse</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Name *</label>
+            <input type="text" class="form-control" name="name" id="editCreatorName" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Handle *</label>
+            <input type="text" class="form-control" name="handle" id="editCreatorHandle" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" name="email" id="editCreatorEmail" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Followers *</label>
+            <input type="number" class="form-control" name="followers" id="editCreatorFollowers" min="0" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categories</label>
+            <div class="category-checkboxes" id="editCategoryCheckboxes"></div>
+          </div>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" id="cancelEditCreator">Cancel</button>
+            <button type="submit" class="btn btn--primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Creator Modal -->
+  <div class="modal" id="deleteCreatorModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content glass-modal">
+      <div class="modal__header">
+        <h3>
+          <i class="fa-solid fa-trash"></i>
+          <span style="margin-left: 8px;">Delete Creator</span>
+        </h3>
+        <button class="modal__close" id="closeDeleteCreatorModal">×</button>
+      </div>
+      <div class="modal__body">
+        <div class="delete-creator-info">
+          <div class="delete-profile-picture" id="deleteProfilePicture"></div>
+          <div class="delete-creator-details">
+            <p>Are you sure you want to delete <strong id="deleteCreatorName">this creator</strong>?</p>
+            <p class="text-warning">This action cannot be undone.</p>
+          </div>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--secondary" id="cancelDeleteCreator">Cancel</button>
+          <button type="button" class="btn btn--error" id="confirmDeleteCreator">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
